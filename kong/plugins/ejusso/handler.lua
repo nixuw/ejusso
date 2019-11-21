@@ -19,8 +19,14 @@ local function shouldSkip(url, conf)
     end
 
     -- 正则表达式匹配的
+    if not conf.skipPattern then
+        return false
+    end
 
-    return false
+    local found =  ngx.re.find(url,conf.skipPattern,"jio")  -- 没找到返回nil
+    kong.log("url: ", url, " pattern: " , conf.skipPattern, " found: ",found)
+
+    return found
 end
 
 local function closeRedis(redis)

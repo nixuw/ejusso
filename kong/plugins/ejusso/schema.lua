@@ -24,7 +24,7 @@ return {
                                         { cookiesName = { type = "string", required = true, } },
                                         { tokenPrefix = { type = "string", required = true, } },
 
-                                        { skipPattern = { type = "string", } },
+                                        { skipPattern = { type = "string", default = "ngx regexp for skip login"} },
                                         { redirectUrl = { type = "string", required = true, } },
                                      },
 
