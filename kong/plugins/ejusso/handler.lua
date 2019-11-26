@@ -5,11 +5,13 @@
 ---
 
 local redismod = require "resty.redis"
+local bs = require("ngx.base64")
 
 local kong = kong
 
 local ejusso = {}
 ejusso.VERSION = "1.0"
+ejusso.PRIORITY=140
 
 
 
@@ -24,7 +26,7 @@ local function shouldSkip(url, conf)
     end
 
     local found =  ngx.re.find(url,conf.skipPattern,"jio")  -- 没找到返回nil
-    kong.log("url: ", url, " pattern: " , conf.skipPattern, " found: ",found)
+    kong.log.err("url: ", url, " pattern: " , conf.skipPattern, " found: ",found)
 
     return found
 end
@@ -40,7 +42,7 @@ local function checkAndRenewToken(token, conf)
 
     local ok, err = redis:connect(conf.redisHost, conf.redisPort)
     if not ok then
-        kong.log("failed to connect redis: ", err)
+        kong.log.err("failed to connect redis: ", err)
         return false
     end
 
@@ -66,7 +68,8 @@ end
 
 
 
-function ejusso:access(conf)
+function ejusso:rewrite(conf)
+    kong.log.err("in sso access...",ngx.var.request_uri)
     -- 当前URL是否不需要检查
     if shouldSkip(ngx.var.request_uri, conf) then
         return
@@ -76,10 +79,18 @@ function ejusso:access(conf)
     local cookie_name = conf.cookiesName
     local token = ngx.var["cookie_"..cookie_name]
     if not token or token == "" or not checkAndRenewToken(token, conf) then
-        ngx.redirect(conf.redirectUrl)
+        local url = ngx.var.scheme .. "://" .. ngx.var.http_host .. ngx.var.request_uri
+        ngx.redirect(conf.redirectUrl .. ngx.escape_uri(url))
     end
 
 
 end
+
+--function ejusso:rewrite(conf)
+--    kong.log.err("in sso rewrite...")
+--
+--
+--    ngx.exit(302)
+--end
 
 return ejusso
