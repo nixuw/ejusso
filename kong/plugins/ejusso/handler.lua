@@ -68,8 +68,12 @@ end
 
 
 
-function ejusso:rewrite(conf)
-    kong.log.err("in sso access...",ngx.var.request_uri)
+function ejusso:access(conf)
+    -- 如果其它插件设置了这个标志，则表示无需再作任何处理
+    if ngx.ctx.eju_dont_do_anything then
+        return
+    end
+
     -- 当前URL是否不需要检查
     if shouldSkip(ngx.var.request_uri, conf) then
         return
@@ -86,11 +90,6 @@ function ejusso:rewrite(conf)
 
 end
 
---function ejusso:rewrite(conf)
---    kong.log.err("in sso rewrite...")
---
---
---    ngx.exit(302)
---end
+
 
 return ejusso
