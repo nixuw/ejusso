@@ -84,6 +84,7 @@ function ejusso:access(conf)
     local token = ngx.var["cookie_"..cookie_name]
     if not token or token == "" or not checkAndRenewToken(token, conf) then
         local url = ngx.var.scheme .. "://" .. ngx.var.http_host .. ngx.var.request_uri
+        ngx.ctx.eju_dont_do_anything = true
         ngx.redirect(conf.redirectUrl .. ngx.escape_uri(url))
     end
 
